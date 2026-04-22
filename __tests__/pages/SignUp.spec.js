@@ -1,29 +1,50 @@
 import React from 'react'
-import { render } from '@testing-library/react-native'
-import { first } from 'random-name'
+import { render, fireEvent, waitFor } from '@testing-library/react-native'
 
-import api from '../../src/services/api'
+import SignUp from '../../src/pages/signUp'
+import usePost from '../../src/hooks/usePost'
 
-import SignUp from '../../src/pages/SignUp'
+jest.mock('../../src/hooks/usePost', () => jest.fn())
+jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon')
+jest.mock('react-hook-form', () => {
+  const React = require('react')
+  return {
+    useForm: () => ({
+      control: {},
+      handleSubmit: callback => () => callback({ username: 'new-user', password: '123123' }),
+      formState: { errors: {} }
+    }),
+    Controller: ({ render }) => render({ field: { onChange: jest.fn(), onBlur: jest.fn(), value: '' } })
+  }
+})
 
 describe('SignUp page', () => {
-  // jest.mock('react-native-vector-icons/MaterialIcons', () => 'Icon')
-  // jest.mock('react-native-vector-icons/MaterialIcons', () => jest.genMockFromModule('react-native-vector-icons/MaterialIcons'))
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
 
-  it('should contains user and password inputs', async () => {
-    const { getByPlaceholderText } = render(<SignUp />)
+  it('should contains user and password inputs', () => {
+    usePost.mockReturnValue([{ loading: false, data: '', error: '' }, jest.fn()])
+    const { getByPlaceholderText } = render(<SignUp navigation={{ goBack: jest.fn() }} />)
 
     expect(getByPlaceholderText('seu usuário')).toBeTruthy()
     expect(getByPlaceholderText('sua senha')).toBeTruthy()
   })
 
-  it('should create a user', async () => {
-    const data = {
-      username: first(),
-      password: '123123'
-    }
-    const response = await api.post('sign-up', data)
+  it('should submit sign up and go back', async () => {
+    const postMock = jest.fn()
+    const goBackMock = jest.fn()
+    usePost.mockReturnValue([{ loading: false, data: '', error: '' }, postMock])
 
-    expect(response.status).toEqual(200)
+    const { getByText } = render(
+      <SignUp navigation={{ goBack: goBackMock }} />
+    )
+
+    fireEvent.press(getByText('Cadastrar'))
+
+    await waitFor(() => {
+      expect(postMock).toHaveBeenCalledWith({ username: 'new-user', password: '123123' })
+      expect(goBackMock).toHaveBeenCalled()
+    })
   })
 })
