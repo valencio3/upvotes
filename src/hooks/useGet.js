@@ -36,19 +36,18 @@ const reducer = (state, action) => {
 
 const useGet = url => {
   const [data, dispatch] = useReducer(reducer, INITIAL_STATE)
-  async function load () {
+  async function load() {
     try {
       dispatch({ type: 'REQUEST' })
-      api.get(url).then(res => {
-        dispatch({ type: 'SUCCESS', data: res.data, status_code: res.status })
-      })
+      const res = await api.get(url)
+      dispatch({ type: 'SUCCESS', data: res.data, status_code: res.status })
     } catch (error) {
       dispatch({ type: 'FAILURE', error: error.message, status_code: 500 })
     }
   }
   useEffect(() => {
     load()
-  }, [])
+  }, [url])
 
   return { ...data, refetch: load }
 }
