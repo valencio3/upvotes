@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { use, useEffect } from 'react'
 import { ToastAndroid } from 'react-native'
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 // import { useNavigation } from '@react-navigation/native'
@@ -26,6 +26,13 @@ const SignIn = ({ navigation }) => {
       navigation.navigate('Main')
     }
    },[postData.data])
+
+   useEffect(() => {
+    if(postData.error.length > 0) {
+      showToast()
+    }
+   },[postData.error])
+
 
   const hasError = errors.username?.message || errors.password?.message ? true : false
   const showToast = () => {
