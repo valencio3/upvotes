@@ -1,7 +1,9 @@
 import axios from 'axios'
+import { API_BASE_URL } from '@env'
 
 const api = axios.create({
-  baseURL: 'https://segware-book-api.segware.io/api/'
+  baseURL: API_BASE_URL,
+  timeout: 15000
 })
 
 export default api
